@@ -62,8 +62,24 @@ After loop 2: deployer holds 34,000 mUSDC directly + 80 mVOL; vault holds 20 mVO
 
 ## Verification status
 
-- **NOT VERIFIED on Sourcify/BaseScan/Lasna explorer.** `forge verify-contract --verifier sourcify` timed out on all four Base Sepolia contracts (operation timeouts from this VM), and the retry requires user approval (a confirmation for the verification step timed out unanswered). Contracts are NOT verified on any explorer yet. The Lasna contract was not attempted (Sourcify does not list chain 5318007; Blockscout verification via lasna.reactscan.net not yet tried).
-- Note: verification needs no new deployment — it can be done any time from the repo + deployed addresses once the retry is approved.
+**ALL 5 CONTRACTS VERIFIED ON SOURCIFY — exact_match (creation + runtime), 24 Nov 2026 ~17:04–17:05 WIB (retry approved by user 17:02 WIB).**
+
+| Contract | Chain | Address | Sourcify | Verified at (UTC) |
+|---|---|---|---|---|
+| mVOL (MockToken) | Base Sepolia 84532 | `0x7Dae8cf8FBe375F7104633b10Ee93A2c502efdC3` | exact_match (runtime; creation null) | 2026-11-24T06:25:18Z |
+| mUSDC (MockToken) | Base Sepolia 84532 | `0xE27b5C2B13410e9818D13420288C19bbE55C33A3` | exact_match (runtime; creation null) | 2026-11-24T06:25:18Z |
+| PriceOracle | Base Sepolia 84532 | `0xf20E23497a5509A94eAc5e956948937dd436F5E9` | exact_match (creation + runtime) | 2026-11-24T10:04:38Z |
+| SentinelVault | Base Sepolia 84532 | `0xBd22e422fBdA3487B5b63c4aacf3D9289cF8Df9D` | exact_match (creation + runtime) | 2026-11-24T10:04:43Z |
+| SentinelReactive | Lasna 5318007 | `0x393Bca85F6eB00cFDd0D431ea47952b0F5Fc7CF8` | exact_match (creation + runtime) | 2026-11-24T10:05:22Z |
+
+Notes on the retry (24 Nov 2026 ~17:03–17:05 WIB):
+- The two MockTokens were ALREADY verified before this retry — the first (timed-out) attempt's submissions had landed on Sourcify at 06:25:18Z despite the timeouts. No re-submission was needed for them.
+- PriceOracle: `forge verify-contract --chain 84532 --verifier sourcify ... --watch` succeeded on the retry (one transient Sourcify POST timeout, auto-retried by forge; job `7aca2d2a-27bf-4dbb-b67f-10afab3d14ae`).
+- SentinelVault: same command succeeded (job `bdc4cab8-8ab8-49d6-bcba-0db22ad9455f`). Note: the address as written in this file's earlier sections (`0xbd22E422fbdA3487b5b63C4AACF3D9289cF8dF9D`) has non-canonical EIP-55 casing — Sourcify's API rejected it as "Invalid address". The canonical checksummed form is `0xBd22e422fBdA3487B5b63c4aacf3D9289cF8Df9D` (same address). Use the canonical form in any API call.
+- Lasna / SentinelReactive: Sourcify DOES accept chain 5318007 for verification despite it not appearing in Sourcify's listed chains — `forge verify-contract --chain 5318007 --verifier sourcify --rpc-url https://lasna-rpc.rnk.dev/ ...` submitted and verified exact_match (job `332b0cb2-0380-4df1-b41f-c4c9bfbe13c3`). Earlier assumption that Sourcify doesn't support Lasna was wrong.
+- Lasna explorer (lasna.reactscan.net) exposes NO public API: `/api/v2/*` returns 404 HTML and the classic `/api?module=contract...` returns the frontend HTML — it is a frontend-only explorer, so the Sourcify verification cannot be confirmed as displayed there from this VM. The contract is verified on Sourcify itself, which is the verifiable fact.
+- BaseScan: Etherscan V1 API is deprecated and V2 requires an API key (no key available; none was created), so the BaseScan UI badge could not be confirmed via API from this VM. Etherscan-family explorers import Sourcify matches, so the source should display on sepolia.basescan.org address pages — confirm visually at submission time if needed.
+- No redeploy was needed; verification was done from the repo + deployed addresses only.
 
 ## Notes / deviations
 
